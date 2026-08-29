@@ -7,7 +7,9 @@
   "scripts": {
     "dev": "vitepress dev",
     "build": "vitepress build",
-    "preview": "vitepress preview"
+    "preview": "vitepress preview",
+    "enlaces": "npm run build && python3 scripts/comprobar-enlaces.py",
+    "enlaces:todos": "npm run build && python3 scripts/comprobar-enlaces.py --externos"
   },
   "devDependencies": {
     "vitepress": "^1.6.3"
