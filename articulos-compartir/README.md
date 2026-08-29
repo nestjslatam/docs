@@ -7,7 +7,8 @@ reutilizarlos.
 |---|---|
 | [`ddd-en-nestjs.md`](ddd-en-nestjs.md) | Artículo técnico. Para Discussion de GitHub, dev.to o el blog |
 | [`linkedin-articulo.md`](linkedin-articulo.md) | **Artículo de LinkedIn** (formato largo, se publica desde «Escribir artículo») |
-| [`linkedin.md`](linkedin.md) | Posts cortos de feed, para anunciar el artículo |
+| [`linkedin-post.md`](linkedin-post.md) | Posts de feed para anunciar el artículo |
+| [`portadas/`](portadas/) | Las imágenes, en las dos medidas de LinkedIn |
 
 ## La diferencia entre los dos de LinkedIn
 
