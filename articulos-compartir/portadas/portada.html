@@ -1,0 +1,78 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+  :root{
+    --bg:#050303; --tinta:#ffffff; --apagado:#9b9a9a;
+    --rojo:#ea2845; --rojo-claro:#ff5c74; --oro:#ffb75c;
+    --borde:rgba(255,255,255,.12); --sutil:rgba(255,255,255,.05);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:1280px;height:720px;overflow:hidden}
+  body{
+    background:var(--bg); color:var(--tinta);
+    font-family:'Manrope',-apple-system,'Segoe UI',sans-serif;
+    display:flex; flex-direction:column; position:relative;
+  }
+  /* El filete de marca, igual que corona el portal */
+  .filete{position:absolute;inset:0 0 auto 0;height:6px;
+    background:linear-gradient(90deg,var(--rojo) 0%,var(--rojo-claro) 38%,var(--oro) 70%,var(--rojo) 100%)}
+  /* Resplandor, como en el héroe */
+  .brillo{position:absolute;top:-32%;left:58%;translate:-50% 0;width:900px;aspect-ratio:1;
+    background:radial-gradient(circle,rgba(234,40,69,.20) 0%,transparent 62%);pointer-events:none}
+  .lienzo{position:relative;z-index:1;flex:1;display:grid;
+    grid-template-columns:1fr auto;align-items:center;gap:56px;padding:64px 88px 40px}
+  .marca{display:flex;align-items:center;gap:16px;margin-bottom:34px}
+  .marca img{width:52px;height:52px;display:block}
+  .marca b{font-size:21px;font-weight:800;letter-spacing:-.02em}
+  .marca span{font-size:13px;color:var(--apagado);padding-left:13px;
+    border-left:2px solid rgba(234,40,69,.6)}
+  h1{font-size:64px;font-weight:500;line-height:1.06;letter-spacing:-.035em;max-width:15ch}
+  h1 em{font-style:normal;color:var(--rojo-claro)}
+  .bajada{margin-top:20px;font-size:19px;line-height:1.5;color:var(--apagado);max-width:40ch}
+  .cifras{display:flex;gap:38px;margin-top:34px;padding-top:28px;
+    border-top:1px solid var(--borde)}
+  .cifra b{display:block;font-size:27px;font-weight:700;letter-spacing:-.02em;line-height:1}
+  .cifra span{display:block;margin-top:6px;font-size:12px;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--apagado)}
+  .paquetes{display:flex;flex-direction:column;gap:10px}
+  .paq{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--apagado);
+    background:var(--sutil);border:1px solid var(--borde);border-radius:999px;
+    padding:9px 18px;white-space:nowrap}
+  .paq b{color:var(--tinta);font-weight:500}
+  .pie{position:relative;z-index:1;display:flex;justify-content:space-between;align-items:center;
+    padding:0 88px 44px;font-size:15px;color:var(--apagado)}
+  .pie strong{color:var(--tinta);font-weight:600}
+  .sello{font-family:'JetBrains Mono',monospace;font-size:13px;
+    border:1px solid var(--borde);border-radius:999px;padding:7px 16px}
+</style></head><body>
+  <div class="filete"></div><div class="brillo"></div>
+  <div class="lienzo">
+    <div>
+      <div class="marca">
+        <img src="logo.png" alt="">
+        <b>NestJS Latam</b>
+        <span>Comunidad hispana</span>
+      </div>
+      <h1>Domain-Driven Design para <em>NestJS</em></h1>
+      <p class="bajada">Librerías, herramientas y documentación en español. Abiertas, con licencia MIT y el código a la vista.</p>
+      <div class="cifras">
+        <div class="cifra"><b>4</b><span>paquetes en npm</span></div>
+        <div class="cifra"><b>1111</b><span>pruebas</span></div>
+        <div class="cifra"><b>98,7%</b><span>cobertura medida</span></div>
+        <div class="cifra"><b>MIT</b><span>sin letra pequeña</span></div>
+      </div>
+    </div>
+    <div class="paquetes">
+      <div class="paq"><b>ddd-lib</b> · agregados y value objects</div>
+      <div class="paq"><b>ddd-cli</b> · genera y audita tu dominio</div>
+      <div class="paq"><b>ddd-valueobjects</b> · doce ya hechos</div>
+      <div class="paq"><b>ddd-es-lib</b> · event sourcing</div>
+    </div>
+  </div>
+  <div class="pie">
+    <span><strong>nestjslatam.dev</strong> · docs.nestjslatam.dev</span>
+    <span class="sello">npm i @nestjslatam/ddd-lib</span>
+  </div>
+</body></html>
