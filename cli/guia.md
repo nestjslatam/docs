@@ -16,16 +16,16 @@ Construimos una cosa desde cero: el dominio de **transporte marítimo** del libr
 
 **Contenido**
 
-1. [Instalar](#1-instalar)
-2. [Orientarse: `ddd list`](#2-orientarse-ddd-list)
-3. [Leer un contrato: `ddd explain`](#3-leer-un-contrato-ddd-explain)
-4. [Construir el grafo: `ddd new`](#4-construir-el-grafo-ddd-new)
-5. [Heredar de cualquier cosa: `ddd extend`](#5-heredar-de-cualquier-cosa-ddd-extend)
-6. [Cazar lo que el compilador no ve: `ddd validate`](#6-cazar-lo-que-el-compilador-no-ve-ddd-validate)
-7. [Dárselo a un agente de IA: `ddd mcp`](#7-dárselo-a-un-agente-de-ia-ddd-mcp)
-8. [Modelar desde prosa: `ddd generate:aggregate`](#8-modelar-desde-prosa-ddd-generateaggregate)
-9. [Referencia de comandos](#9-referencia-de-comandos)
-10. [Cuando algo no sale](#10-cuando-algo-no-sale)
+1. [Instalar](#_1-instalar)
+2. [Orientarse: `ddd list`](#_2-orientarse-ddd-list)
+3. [Leer un contrato: `ddd explain`](#_3-leer-un-contrato-ddd-explain)
+4. [Construir el grafo: `ddd new`](#_4-construir-el-grafo-ddd-new)
+5. [Heredar de cualquier cosa: `ddd extend`](#_5-heredar-de-cualquier-cosa-ddd-extend)
+6. [Cazar lo que el compilador no ve: `ddd validate`](#_6-cazar-lo-que-el-compilador-no-ve-ddd-validate)
+7. [Dárselo a un agente de IA: `ddd mcp`](#_7-darselo-a-un-agente-de-ia-ddd-mcp)
+8. [Modelar desde prosa: `ddd generate:aggregate`](#_8-modelar-desde-prosa-ddd-generate-aggregate)
+9. [Referencia de comandos](#_9-referencia-de-comandos)
+10. [Cuando algo no sale](#_10-cuando-algo-no-sale)
 
 ---
 
@@ -106,7 +106,7 @@ npx ddd list --role compose
   8 symbols · ddd explain <name> for any of them
 ```
 
-Esos ocho son **colaboradores que tu agregado ya tiene** — `aggregate.brokenRules`, `aggregate.validators`, `aggregate.trackingState`. No son clases base. Intentar heredar de uno es el desvío equivocado más común, y el CLI te para (ver [Cuando algo no sale](#10-cuando-algo-no-sale)).
+Esos ocho son **colaboradores que tu agregado ya tiene** — `aggregate.brokenRules`, `aggregate.validators`, `aggregate.trackingState`. No son clases base. Intentar heredar de uno es el desvío equivocado más común, y el CLI te para (ver [Cuando algo no sale](#_10-cuando-algo-no-sale)).
 
 `--family` acepta `validation`, `value`, `aggregate`, `event`. `--role` acepta `extend`, `implement`, `compose`, `use`. Se combinan.
 

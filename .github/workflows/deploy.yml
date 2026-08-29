@@ -27,6 +27,29 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+
+      - name: Los enlaces internos apuntan a encabezados que existen
+        run: |
+          # VitePress antepone un guion bajo a los ids que empezarían por
+          # dígito y quita los acentos, así que un índice escrito con las
+          # anclas de GitHub apunta a la nada sin que el build se queje.
+          python3 - <<'PY'
+          import re, pathlib, sys
+          rotos = []
+          for f in pathlib.Path('.vitepress/dist').rglob('*.html'):
+              h = f.read_text(encoding='utf-8', errors='replace')
+              ids = set(re.findall(r'<h[1-6][^>]*\bid="([^"]+)"', h))
+              for e in set(re.findall(r'href="#([^"]+)"', h)):
+                  if e != 'VPContent' and e not in ids:
+                      rotos.append(f'{f.relative_to(".vitepress/dist")} -> #{e}')
+          if rotos:
+              print('  enlaces internos rotos:')
+              for r in sorted(rotos)[:40]:
+                  print(f'    {r}')
+              sys.exit(1)
+          print('  ✓ todos los enlaces internos resuelven')
+          PY
+
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
