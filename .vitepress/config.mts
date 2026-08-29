@@ -6,6 +6,10 @@ export default defineConfig({
   description:
     'Domain-Driven Design, event sourcing y herramientas para NestJS. Documentación en español.',
   cleanUrls: true,
+  // Oscuro siempre, como la referencia. Sin `force` el visitante con el
+  // sistema en claro ve un tema a medias, porque la paleta está afinada
+  // sobre negro.
+  appearance: 'force-dark',
   lastUpdated: true,
   ignoreDeadLinks: true,
 

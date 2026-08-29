@@ -1,0 +1,214 @@
+/**
+ * Identidad tomada de docs.nestjs.com, medida del sitio real:
+ *   fondo #080606 · texto #aca8a9 · énfasis #f2eff0 · Manrope a 15px
+ *   código sobre #151112 con radio 12px
+ *
+ * VitePress se pinta entero con variables --vp-*, así que basta redefinirlas
+ * en lugar de perseguir selectores del tema por defecto.
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --nl-red:        #ea2845;
+  --nl-red-soft:   #ff5c74;
+  --nl-gold:       #ffb75c;
+
+  --vp-font-family-base: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+  --vp-font-family-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* La marca. VitePress usa brand-1 para enlaces y acentos, brand-2 para
+     hover y brand-3 para el fondo de los botones sólidos. */
+  --vp-c-brand-1: var(--nl-red-soft);
+  --vp-c-brand-2: var(--nl-red);
+  --vp-c-brand-3: var(--nl-red);
+  --vp-c-brand-soft: color-mix(in srgb, var(--nl-red) 16%, transparent);
+}
+
+/* El sitio es oscuro siempre, igual que la referencia: se fuerzan también
+   los tokens del modo claro para que un visitante con el sistema en claro
+   vea lo mismo y no una versión a medio hacer. */
+:root,
+.dark {
+  --vp-c-bg:         #080606;
+  --vp-c-bg-alt:     #0d0a0b;
+  --vp-c-bg-elv:     #120f10;
+  --vp-c-bg-soft:    #120f10;
+
+  --vp-c-text-1:     #f2eff0;
+  --vp-c-text-2:     #aca8a9;
+  --vp-c-text-3:     #6f6a6b;
+
+  --vp-c-divider:    rgba(255, 255, 255, .09);
+  --vp-c-border:     rgba(255, 255, 255, .12);
+  --vp-c-gutter:     rgba(255, 255, 255, .07);
+
+  --vp-code-block-bg:   #151112;
+  --vp-code-bg:         rgba(255, 255, 255, .08);
+  --vp-code-color:      var(--nl-gold);
+
+  --vp-c-default-soft:  rgba(255, 255, 255, .06);
+  --vp-c-tip-1:         var(--nl-red-soft);
+  --vp-c-tip-soft:      color-mix(in srgb, var(--nl-red) 14%, transparent);
+  --vp-c-warning-1:     var(--nl-gold);
+  --vp-c-warning-soft:  color-mix(in srgb, var(--nl-gold) 14%, transparent);
+  --vp-c-danger-1:      #ff7b72;
+  --vp-c-danger-soft:   rgba(255, 123, 114, .14);
+}
+
+html { color-scheme: dark; }
+body { font-size: 15px; }
+
+/* Barra superior ---------------------------------------------------------- */
+
+.VPNav, .VPNavBar {
+  background-color: color-mix(in srgb, #080606 82%, transparent) !important;
+  backdrop-filter: saturate(180%) blur(14px);
+}
+.VPNavBar.has-sidebar .content-body { background: transparent !important; }
+
+/* El filete de la marca, igual que en el portal. */
+.VPNav::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: linear-gradient(90deg,
+    var(--nl-red) 0%, var(--nl-red-soft) 38%, var(--nl-gold) 70%, var(--nl-red) 100%);
+  z-index: 1;
+}
+
+.VPNavBarTitle .title { font-weight: 800; letter-spacing: -0.025em; }
+
+/* Barra lateral ----------------------------------------------------------- */
+
+/* Los títulos de sección en rojo y versalitas: es la seña de identidad del
+   índice de docs.nestjs.com. */
+.VPSidebarItem.level-0 > .item > .text {
+  font-size: 12px !important;
+  font-weight: 700;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--nl-red-soft) !important;
+}
+
+.VPSidebarItem .link .link-text { font-size: 14px; color: var(--vp-c-text-2); }
+.VPSidebarItem .link:hover .link-text { color: var(--vp-c-text-1); }
+.VPSidebarItem.is-active > .item .link-text { color: var(--vp-c-text-1) !important; font-weight: 600; }
+
+/* La barra activa a la izquierda, en lugar del punto por defecto. */
+.VPSidebarItem.is-active > .item { position: relative; }
+.VPSidebarItem.is-active > .item::before {
+  content: '';
+  position: absolute;
+  left: -14px;
+  top: 4px;
+  bottom: 4px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--nl-red);
+}
+
+/* Contenido --------------------------------------------------------------- */
+
+.vp-doc h1 { font-weight: 800; letter-spacing: -0.03em; }
+.vp-doc h2 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  border-top: 1px solid var(--vp-c-divider);
+  padding-top: 22px;
+  margin-top: 44px;
+}
+.vp-doc h3 { font-weight: 650; letter-spacing: -0.015em; }
+
+.vp-doc a { font-weight: 500; text-underline-offset: .2em; }
+.vp-doc p { line-height: 1.72; }
+
+.vp-doc div[class*='language-'],
+.vp-doc pre { border-radius: 12px; }          /* el radio de la referencia */
+.vp-doc :not(pre) > code { border-radius: 6px; font-size: .86em; }
+
+.vp-doc table { font-size: 14px; }
+.vp-doc th {
+  font-size: 12px;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--vp-c-text-3);
+  font-weight: 600;
+}
+
+/* Los avisos, con el borde a la izquierda en vez del recuadro completo. */
+.vp-doc .custom-block {
+  border: 1px solid var(--vp-c-divider);
+  border-left-width: 3px;
+  border-radius: 10px;
+}
+.vp-doc .custom-block.tip     { border-left-color: var(--nl-red); }
+.vp-doc .custom-block.warning { border-left-color: var(--nl-gold); }
+.vp-doc .custom-block.danger  { border-left-color: #ff7b72; }
+.vp-doc .custom-block-title { font-weight: 700; }
+
+/* Portada ----------------------------------------------------------------- */
+
+.VPHero .name {
+  background: linear-gradient(120deg, var(--nl-red-soft), var(--nl-gold));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+.VPHero .text { font-weight: 500; letter-spacing: -0.02em; }
+.VPHero .tagline { color: var(--vp-c-text-2); }
+
+/* El botón principal, blanco con texto negro: la firma de nestjs.com. */
+.VPButton.brand {
+  background: #ffffff;
+  border-color: #ffffff;
+  color: #000000;
+  border-radius: 20px;
+  font-weight: 700;
+}
+.VPButton.brand:hover { background: #ffffff; opacity: .9; }
+.VPButton.alt {
+  border-radius: 20px;
+  background: transparent;
+  border-color: var(--vp-c-border);
+  color: var(--vp-c-text-1);
+}
+.VPButton.alt:hover { background: var(--vp-c-default-soft); border-color: var(--vp-c-text-3); }
+
+.VPFeature {
+  border-radius: 16px;
+  border-color: var(--vp-c-divider);
+  background: var(--vp-c-bg-soft);
+  transition: border-color .18s, transform .18s;
+}
+.VPFeature:hover {
+  border-color: color-mix(in srgb, var(--nl-red) 45%, transparent);
+  transform: translateY(-2px);
+}
+.VPFeature .title { font-weight: 650; letter-spacing: -0.015em; }
+
+/* Índice de la derecha ---------------------------------------------------- */
+
+.VPDocAsideOutline .outline-title {
+  font-size: 12px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--vp-c-text-3);
+}
+.VPDocAsideOutline .outline-link:hover,
+.VPDocAsideOutline .outline-link.active { color: var(--nl-red-soft); }
+.VPDocAsideOutline .outline-marker { background-color: var(--nl-red) !important; }
+
+/* Pie --------------------------------------------------------------------- */
+
+.VPDocFooter, .VPFooter { border-top: 1px solid var(--vp-c-divider); }
+.VPFooter .message, .VPFooter .copyright { color: var(--vp-c-text-3); font-size: 13px; }
+.VPFooter a { color: var(--vp-c-text-2); }
+.VPFooter a:hover { color: var(--nl-red-soft); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: .01ms !important; }
+}
