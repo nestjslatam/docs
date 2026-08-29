@@ -1,136 +1,145 @@
-# El número que nos tranquilizaba era el que no estaba mirando
+# NestJS Latam: herramientas de Domain-Driven Design en español, abiertas y para todos
 
-### Lo que aprendí midiendo de verdad la cobertura de una librería que llevaba un año en producción
-
----
-
-Durante meses miré el mismo número y me quedé tranquilo: **98,6 % de cobertura de tests**.
-
-Es el tipo de cifra que cierra conversaciones. Aparece en el README, en el pipeline, en la diapositiva cuando alguien pregunta por la calidad del código. Nadie discute un 98,6 %.
-
-La cifra real era **58,4 %**. Y en uno de los módulos, **8,5 %**.
-
-Lo que más me costó asimilar no fue el error. Fue que **ninguna de las dos cifras era mentira**. Las dos salían de la misma herramienta, correctamente calculadas. La diferencia estaba en algo que yo nunca había pensado en revisar: *qué le habíamos pedido medir*.
-
-Esta es la historia de cómo lo encontramos, los cinco mecanismos que lo escondían —ninguno de ellos un fallo, todos configuración perfectamente razonable— y por qué creo que le está pasando a más equipos de los que imaginamos.
+### Qué construimos, qué problema resuelve y cómo participar
 
 ---
 
-## Cómo se esconde un 40 %
+Hay una línea que casi todos hemos escrito:
 
-### 1. El patrón que excluía justo lo que faltaba probar
-
-```json
-"collectCoverageFrom": ["src/**/*.ts", "!src/**/*.spec.ts"]
+```
+if (!dto.email.includes('@')) throw new BadRequestException('Email inválido');
 ```
 
-Inofensivo. Hasta que alguien añade un directorio **fuera** de `src/`.
+Funciona. Y tiene tres costes que no se pagan el día que la escribes, sino meses después.
 
-Esos ficheros no aparecían en el informe. Y aquí está el detalle que lo cambia todo: **no aparecían como 0 %. No aparecían.**
+**El primero: la regla se queda donde nació.** Cuando ese mismo email llegue por una cola de mensajes, por la importación de un CSV o por un script de migración, la comprobación no estará. La regla no pertenece al controlador: pertenece al negocio, y debería viajar con el dato allá donde vaya.
 
-Un fichero sin cubrir baja la media. Un fichero ausente, no. El promedio se calcula sobre lo que decidiste mirar, y esos ficheros no estaban en la lista.
+**El segundo: se detiene en el primer error.** El usuario corrige el email, vuelve a enviar, y descubre que el teléfono también estaba mal. Tres viajes para tres problemas que ya conocíamos desde el primero.
 
-### 2. Un patrón que no casaba con nada, en silencio
+**El tercero: para el compilador, un email es un texto cualquiera.** El nombre de un producto, un identificador y una contraseña son los tres `string`. Se pueden intercambiar sin que nada proteste, y el día que ocurre no hay ningún error: hay un dato en el sitio equivocado.
 
-El intento de arreglo fue el evidente:
+Domain-Driven Design lleva veinte años ofreciendo una respuesta a esto. Lo que faltaba, en nuestro entorno, era una implementación cómoda para NestJS **y documentación seria en español**.
 
-```json
-"collectCoverageFrom": ["../libs/ddd/src/**/*.ts"]
+Eso es lo que llevamos un año construyendo en **NestJS Latam**.
+
+---
+
+## Lo que hacen las librerías
+
+### `ddd-lib` — los bloques de construcción
+
+El paquete principal. Da cuatro cosas que si no tendrías que escribir a mano en cada proyecto: **value objects** que se validan solos, **agregados** que protegen las reglas que abarcan a más de un dato, **seguimiento de estado** y **eventos de dominio**, todo sobre `@nestjs/cqrs`.
+
+Su decisión de diseño más característica es que **la validación recolecta en lugar de detenerse**:
+
+```
+product.isValid;                        // false
+product.brokenRules.getBrokenRules();   // las tres, con el campo de cada una
 ```
 
-No funciona. Los patrones se resuelven contra el directorio raíz del proyecto y no atraviesan `../`.
+Eso cambia lo que puedes devolverle a quien llama. En lugar de un error genérico, una respuesta que un formulario sabe usar: dos campos marcados a la vez, cada uno con su motivo, en un solo viaje.
 
-Pero lo importante no es eso: **la herramienta no avisa cuando un patrón no casa con ningún fichero**. Dos configuraciones distintas, el mismo informe, cero mensajes. Cambiamos algo, el número no se movió, y concluimos que ya estaba bien.
+Y trae consigo una distinción que ordena toda la API:
 
-### 3. Añadir vigilancia subía el número
+**400** es un tipo equivocado y lo rechaza el transporte antes de llegar al dominio. **422** es un valor equivocado — `0` es un número perfectamente válido; que no pueda ser un precio es conocimiento de negocio, y sólo el agregado puede juzgarlo. **409** es un estado que no permite la operación: nada está mal formado, simplemente no se puede confirmar un pedido vacío.
 
-Este es el que más me sorprendió.
+Esa separación, sostenida en el tiempo, es la diferencia entre una API que se puede consumir y una que hay que adivinar.
 
-Los umbrales de cobertura se pueden poner por directorio. Y hay un efecto de segundo orden que casi nadie conoce: **los ficheros que casan con un umbral específico salen del cómputo global**.
+### `ddd-valueobjects` — doce ya escritos
 
-Consecuencia: pones un umbral estricto a tu módulo mejor probado, y el porcentaje global de todo lo demás **sube**, porque acabas de sacar del promedio a los buenos.
+Email, dinero, teléfono, URL, porcentajes, rangos de fechas, coordenadas, y documentos de identidad latinoamericanos como DNI y RUC. Cada uno con sus reglas, sus formateadores y su comparación por valor.
 
-El número mejora exactamente cuando empeoras la vigilancia. Es difícil diseñar una trampa mejor.
+El que mejor ilustra la idea es el dinero:
 
-### 4. Un guardián que dejaba pasar cuando no encontraba la puerta
+```
+precio.add(envio);   // lanza si uno está en soles y el otro en dólares
+```
 
-En el pipeline teníamos una comprobación que abortaba si la cobertura bajaba del umbral. Leía el informe, comparaba, y fallaba si no llegaba.
+Sumar monedas distintas deja de ser un error silencioso que aparece en una conciliación tres semanas después, y pasa a ser algo que **no se puede escribir**.
 
-Si el informe **no existía** —porque el paso anterior falló, o porque faltaba configurar el formato— la variable quedaba vacía. Y comparar una cadena vacía con un número, en Bash, no es un error de sintaxis: devuelve **falso**.
+La validación de documentos es enchufable: registras una estrategia para tu país y sustituye a la que viene. Escribir una para un formato con el que convives a diario es, probablemente, la contribución más fácil y más útil de todo el proyecto.
 
-La puerta pasaba.
+### `ddd-es-lib` — event sourcing sobre MongoDB
 
-Un guardián que, cuando no encuentra la puerta, concluye que está cerrada.
+Para cuando no quieres guardar el estado actual sino **todo lo que pasó**, y derivar el estado de ahí. Trae event store con control de concurrencia, snapshots, upcasting para cuando el esquema de tus eventos evolucione, proyecciones y sagas.
 
-### 5. Una constante que cambió de significado dos veces
+Es el paquete menos maduro de los cuatro y lo decimos en su portada, no en la letra pequeña.
 
-`COVERAGE_THRESHOLD` empezó valiendo 80 y refiriéndose a la librería. Se movió a otro pipeline, donde medía la aplicación de ejemplo. Y después a un tercero, donde medía las dos juntas.
+### `ddd-cli` — la pieza que nos parece distinta
 
-**El nombre nunca cambió. El valor tampoco.**
+La mayoría de los generadores llevan una plantilla fija y confían en que siga cuadrando con la librería. Éste **lee los tipos de la versión que tú tienes instalada**, con la API del compilador de TypeScript. Le preguntas por una clase y te describe *tu* versión — incluida una que nunca ha visto, o una que hayas escrito tú en tu propio fork.
 
-El mismo 80 significó «exigente», «laxo» y «trivial» según el mes, y en ningún momento hubo un commit que dijera «estamos bajando el listón», porque técnicamente nadie lo bajó.
+Eso le permite hacer algo que una plantilla no puede: **auditar**.
 
----
+```
+npx ddd validate
+```
 
-## Lo que apareció debajo
+Comprueba cuatro errores que tienen una propiedad en común — **compilan, pasan los tests y no producen ningún síntoma**:
 
-Escribir las pruebas que faltaban destapó **34 defectos**. Ocho de ellos graves. Los tres que me parecen más instructivos:
+- Una fábrica que no comprueba la validez y devuelve objetos inválidos en silencio
+- Un método sobrescrito que no encadena con el de la clase base, y hace desaparecer sus validadores
+- Leer un campo propio en un método que el constructor base llama *antes* que el tuyo
+- Un manejador de comandos sin la llamada que despacha los eventos: el comando triunfa y todos los suscriptores se saltan
 
-**Un objeto que fallaba una validación no podía volver a ser válido nunca.** El método que validaba sólo *añadía* errores; nunca limpiaba los de la pasada anterior. Corregías el problema, volvías a enviar, y recibías exactamente la misma respuesta. Faltaba una línea.
+Devuelve `0` o `1`. Se pone en un pipeline tal cual.
 
-Nadie lo había visto porque el uso normal valida **una vez**: se construye el objeto, se comprueba, y si falla se descarta. El fallo sólo aparece cuando algo revalida — y las pruebas se habían escrito imitando el uso normal.
-
-**Un método que devolvía un alias en lugar de una copia.** Se llamaba `clone()`. Modificabas la «copia» y cambiabas el original.
-
-**Una comprobación de seguridad que no se ejecutaba jamás.** Un método pasó a ser una propiedad entre dos versiones. El código antiguo, `if (!objeto.esValido)`, seguía compilando — pero ahora evaluaba *la función*, que siempre es verdadera. La condición nunca se cumplía.
-
-Sin error. Sin aviso. Sin nada en ningún log. La validación llevaba dos versiones sin ejecutarse.
-
----
-
-## Las tres cosas que me llevo
-
-**Una cobertura alta responde a una pregunta más estrecha de lo que parece.** Responde «de lo que decidí medir, ¿cuánto se ejecuta?». Nunca responde «¿decidí medir lo correcto?». Y esa segunda pregunta no te la va a hacer ninguna herramienta.
-
-**El fallo casi nunca es un porcentaje bajo: es un fichero ausente.** Antes de mirar el número, cuenta cuántos ficheros hay en el informe y compáralo con cuántos esperabas. Son dos comandos. Si esperabas 120 y salen 74, ya sabes por dónde empezar.
-
-**Cuando un número te sorprenda por bueno, averigua qué está contando.** Un resultado mejor de lo esperado merece la misma investigación que uno peor. Instintivamente auditamos las malas noticias y celebramos las buenas, y ahí es donde se esconden estas cosas.
+Y corre como **servidor MCP**, así que Claude Code, Codex o Cursor lo usan directamente **sin necesitar una clave de API**: el modelo lo pone tu agente. El reparto de trabajo es lo interesante — el agente decide la frontera del agregado y las invariantes, que es criterio; la herramienta lee las declaraciones con exactitud y audita contra el idioma, que es justo lo que un modelo hace mal.
 
 ---
 
-## Qué hicimos con eso
+## Qué es NestJS Latam
 
-Los 34 defectos llevaban ahí todo el tiempo. Lo único que cambió fue que alguien miró.
+Una comunidad hispanohablante que construye y documenta en abierto. Todo lo que hacemos está en npm, con licencia MIT y el código a la vista.
 
-Hoy la librería está en **98,76 % medido**, con 1111 pruebas. Pero el cambio que más valoro no es ese: es que **el ejemplo del README es ahora un fichero de test que se ejecuta en cada push**. Si deja de compilar contra la versión publicada, el build se pone rojo antes de que nadie lo copie y pierda una tarde.
+**Qué vas a encontrar:**
 
-Los ejemplos a los que sustituyó tenían siete errores de tipos y no habían compilado nunca contra ninguna versión publicada. Nadie los ejecutaba, así que nadie lo sabía.
+**Documentación completa en español**, en [docs.nestjslatam.dev](https://docs.nestjslatam.dev) — de tu primer value object a la referencia de API, con los errores típicos y su síntoma explicados donde te los vas a encontrar.
 
-Y escribimos una herramienta que audita el código contra **la versión que tú tienes instalada**, leyendo sus declaraciones de tipos en lugar de llevar una tabla de compatibilidad que alguien tendría que mantener al día. Detecta los cuatro errores que aquella librería hace fáciles y silenciosos: los que compilan, pasan los tests y no producen ningún síntoma.
+**Guías y tutoriales paso a paso**: montar tu primer agregado, probarlo bien, modelar dinero sin equivocarte, migrar entre versiones mayores, conectar el CLI a tu agente de IA.
 
-Todo eso —cuatro paquetes, la herramienta y la documentación— está abierto con licencia MIT, en español, en **[NestJS Latam](https://nestjslatam.dev)**. Lo construimos porque nos hacía falta a nosotros.
+**Artículos de fondo** sobre lo que aprendimos construyendo esto, incluidos los errores. Uno cuenta cómo una cobertura del 98,6 % convivía con un 58,4 % real y los cinco mecanismos que lo escondían. Otro, cómo una comprobación de seguridad estuvo dos versiones sin ejecutarse porque un método pasó a ser una propiedad.
 
-Con una advertencia que también está escrita en cada README, antes de que la descubras tú: **la API todavía se mueve y ha roto entre versiones**. Clava una versión exacta. Y uno de los cuatro paquetes es claramente el menos maduro, y lo decimos en mayúsculas en su portada.
+**Un ejemplo completo y funcionando**: una aplicación de pedidos y productos que consume la librería, con su superficie HTTP real y sus pruebas.
 
-Preferimos perder alguna instalación a que alguien se lleve una sorpresa en producción.
+**Y una norma que nos importa más que el código:** que las afirmaciones sean ciertas. Si un README dice que algo funciona, es porque alguien lo ejecutó. Si algo está roto, está escrito antes de que lo descubras tú. Cada repositorio publica sus cifras medidas, no prometidas.
 
----
-
-## Por qué lo cuento
-
-Porque sospecho que no somos un caso raro.
-
-Si mides cobertura en tu equipo, te propongo un ejercicio de cinco minutos: ejecuta el informe **sin ninguna configuración**, sobre todos los ficheros, y compara el número de ficheros con el que esperabas.
-
-No el porcentaje. **El número de ficheros.**
-
-Si coinciden, enhorabuena: tu número significa lo que crees. Si no, acabas de encontrar algo — y me gustaría que me lo contaras.
+Por eso también decimos lo incómodo: **la API todavía se mueve y ha roto entre versiones mayores**. Clava una versión exacta. Preferimos perder una instalación a que alguien se lleve una sorpresa en producción.
 
 ---
 
-**Alberto Arroyo** — [BeyondNetCode](https://beyondnet.info/)
+## Cómo participar
 
-Construimos librerías de Domain-Driven Design para NestJS con la comunidad hispanohablante.
-**[nestjslatam.dev](https://nestjslatam.dev)** · **[docs.nestjslatam.dev](https://docs.nestjslatam.dev)** · **[github.com/nestjslatam](https://github.com/nestjslatam)**
+No hace falta pedir permiso, ni ser experto, ni escribir código.
 
-*Proyecto de comunidad no oficial, sin afiliación con NestJS ni sus autores.*
+**Pregunta.** Si algo no se entiende, casi siempre es culpa de cómo está explicado. Cada pregunta mejora la documentación para quien venga detrás.
+
+**Corrige una página.** Cada página de la documentación tiene un enlace «Editar en GitHub» al final. Una errata arreglada es una contribución.
+
+**Reporta lo que se rompe.** Un informe que documenta con precisión un fallo vale tanto como el arreglo. Con la versión exacta y cómo reproducirlo, ya está medio resuelto.
+
+**Escribe.** ¿Resolviste algo que te costó una tarde? Eso es un artículo. Lo publicamos con tu firma y tu enlace.
+
+**Manda un pull request.** Cada repositorio tiene una sección *Contributing* con tareas concretas: no un «se aceptan contribuciones», sino qué falta exactamente y cómo comprobar que lo arreglaste. Algunas se verifican en cinco minutos.
+
+**Cuéntalo.** Si algo de esto te sirvió, decirlo ayuda a que otros lo encuentren. Es la contribución más barata y de las más útiles.
+
+---
+
+## Empezar
+
+```
+npm install @nestjslatam/ddd-lib @nestjs/cqrs
+```
+
+La guía completa está en **[docs.nestjslatam.dev](https://docs.nestjslatam.dev)**. La comunidad, en **[nestjslatam.dev](https://nestjslatam.dev)**. Todo el código, en **[github.com/nestjslatam](https://github.com/nestjslatam)**.
+
+Si trabajas con NestJS y llevas tiempo con la sensación de que las reglas de tu negocio están repartidas por los controladores, esto se escribió para ese problema.
+
+Y si te animas a mejorarlo, mejor todavía. Se construyó así.
+
+---
+
+**Impulsado por [BeyondNetCode](https://beyondnet.info/)** con la comunidad NestJS Latam.
+
+*Proyecto de comunidad no oficial, sin afiliación con NestJS ni con sus autores. NestJS fue creado por Kamil Myśliwiec y se publica bajo licencia MIT.*
